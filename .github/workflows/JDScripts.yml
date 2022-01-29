@@ -1,0 +1,159 @@
+name: JDScripts
+on:
+  schedule:
+    - cron: 30 15 * * *
+  watch:
+    types: started
+env:
+  TZ: Asia/Shanghai
+jobs:
+  build:
+    runs-on: Ubuntu-latest  
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install build dependencies
+      run: |
+        sudo npm install -g typescript
+        sudo apt-get install wget
+        sudo apt install rename
+    - name: Update JDScripts
+      run: |
+        echo "========= 开始清空脚本 ========="
+        shopt -s extglob
+        rm -rf !(backup|README.md)
+        shopt -u extglob
+         echo "========= 开始下载小小的脚本及依赖 ========="
+        git clone https://github.com/Annyoo2021/scripts.git ./Annyoo2021
+        cp -f ./Annyoo2021/jd_*.js ./
+        cp -rf ./Annyoo2021/utils ./
+        cp -rf ./Annyoo2021/function ./
+        rm -rf ./Annyoo2021
+        echo "========= 开始下载smiek2221的脚本 ========="
+        git clone https://github.com/smiek2221/scripts.git ./smiek2221
+        rm -rf ./smiek2221/USER_AGENTS.js
+        cp -f ./smiek2221/*_*.js ./
+        rm -rf ./smiek2221
+        echo "========= 开始下载curtinlv的脚本 ========="
+        git clone https://github.com/curtinlv/JD-Script.git ./curtinlv
+        find ./curtinlv/ -name "*py" -type f -exec cp {} ./ \;
+        rm -rf ./curtinlv
+        echo "========= 开始下载start的脚本 ========="
+        git clone -b main https://github.com/star261/jd.git ./star
+        cp -rf ./star/scripts/*_*.js ./
+        rm -rf ./star
+        echo "========= 开始下载JDHelloWorld的脚本 ========="
+        git clone https://github.com/JDHelloWorld/jd_scripts.git ./JDHelloWorld
+        mv ./JDHelloWorld/githubAction.md ./githubAction.md
+        rm -rf ./JDHelloWorld/jd_喂猪.ts
+        rm -rf ./JDHelloWorld/jd_speed_redEnvelope.ts
+        rm -rf ./JDHelloWorld/jd_jxScore.ts
+        rm -rf ./JDHelloWorld/jd_city1.ts
+        rm -rf ./JDHelloWorld/utils/V3.ts
+        rm -rf ./JDHelloWorld/jd_cfd.ts
+        rm -rf ./JDHelloWorld/jd_jxmc.ts
+        rm -rf ./JDHelloWorld/jd_ysq.ts
+        rm -rf ./JDHelloWorld/jd_jxmc_getCoin.ts
+        rm -rf ./JDHelloWorld/jd_jxgc.ts
+        rm -rf ./JDHelloWorld/jd_health.ts
+        rm -rf ./JDHelloWorld/jd_jinli_hongbao.ts
+        rm -rf ./JDHelloWorld/jd_order_cashback.ts
+        rm -rf ./JDHelloWorld/jd_tewu.ts
+        rm -rf ./JDHelloWorld/jd_tiger.ts
+        rm -rf ./JDHelloWorld/jd_jxmc_stock.ts
+        echo "========= 开始复制依赖 ========="
+        cp -f ./JDHelloWorld/package.json ./
+        cp -f ./JDHelloWorld/sendNotify.js ./
+        cp -f ./JDHelloWorld/jdCookie.js ./
+        cp -f ./JDHelloWorld/*ShareCodes.js ./
+        echo "========= 开始转换JDHelloWorld的ts脚本 ========="
+        cd ./JDHelloWorld
+        sudo npm install
+        sudo npm install request-promise
+        sudo npm install request
+        sudo npm install crypto-js
+        sudo npm install iconv-lite
+        sudo npm install fs
+        tsc *_*.ts
+        cd ./utils
+        tsc *.ts
+        echo "========= 开始复制JDHelloWorld的脚本 ========="
+        cd ../..
+        cp -rf ./JDHelloWorld/utils ./
+        rm -rf ./JDHelloWorld/jd_update.js
+        cp -rf ./JDHelloWorld/backUp/*.js ./backup/
+        cp -f ./JDHelloWorld/*_*.js ./
+        cp -f ./JDHelloWorld/package.json ./
+        rm -rf ./JDHelloWorld
+        echo "========= 开始下载单文件脚本 ========="
+        wget -N https://github.com/yangtingxiao/QuantumultX/raw/master/scripts/jd/jd_lotteryMachine.js
+        wget -N https://github.com/NobyDa/Script/raw/master/JD-DailyBonus/JD_DailyBonus.js
+        wget -N https://github.com/jiulan/platypus/raw/main/scripts/jd_shop_sign.js
+        echo "========= 开始更改前缀 ========="
+        rename -f 's/^js_/jd_js/' *
+        rename -f 's/^jd_fan/jd_wxFans/' *
+        rename -f 's/^jx_/jd_jx/' *
+        rename -f 's/^gua_/jd_gua/' *
+        rename -f 's/^star_/jd_star/' *
+        rename -f 's/^jddj/jd_dj/' *
+        echo "========= 开始生成脚本 ========="
+        echo "#!/bin/bash" > ./jdScripts.sh
+        echo "cd ./" >> ./jdScripts.sh
+        traverseDir()
+        {
+            filepath=$1
+            for file in `ls -a $filepath`
+            do
+                if [ -d ${filepath}/$file ]
+                then
+                    echo "This is the directory"
+                else
+                    getJavaScript ${filepath}/$file
+                fi
+            done
+        }
+        getJavaScript()
+        {
+            file=$1
+            if [ "${file##*.}"x = "js"x ];then
+                echo "node "$file >> ./jdScripts.sh
+            fi    
+        }
+        traverseDir .
+        echo "" >> ./jdScripts.sh
+        echo "========= 开始去除内容 ========="
+        sed -i 's#node ./JDJRValidator_Pure.js##g' ./jdScripts.sh
+        sed -i 's#node ./JD_DailyBonus.js##g' ./jdScripts.sh
+        sed -i 's#node ./JD_extra_cookie.js##g' ./jdScripts.sh
+        sed -i 's#node ./JS_USER_AGENTS.js##g' ./jdScripts.sh
+        sed -i 's#node ./TS_USER_AGENTS.js##g' ./jdScripts.sh
+        sed -i 's#node ./USER_AGENTS.js##g' ./jdScripts.sh
+        sed -i 's#node ./ZooFaker_Necklace.js##g' ./jdScripts.sh
+        sed -i 's#node ./jdCookie.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_getShareCodes.js##g' ./jdScripts.sh
+        sed -i 's#node ./jdDreamFactoryShareCodes.js##g' ./jdScripts.sh
+        sed -i 's#node ./jdFactoryShareCodes.js##g' ./jdScripts.sh
+        sed -i 's#node ./jdFruitShareCodes.js##g' ./jdScripts.sh
+        sed -i 's#node ./jdJxncShareCodes.js##g' ./jdScripts.sh
+        sed -i 's#node ./jdPetShareCodes.js##g' ./jdScripts.sh
+        sed -i 's#node ./jdPlantBeanShareCodes.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_delCoupon.js##g' ./jdScripts.sh
+        sed -i 's#node ./sendNotify.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_blueCoin.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_carnivalcity_help.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_checkCookie.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_daily_egg.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_guawealth_island_help.js##g' ./jdScripts.sh
+        sed -i 's#node ./jd_jxg.js##g' ./jdScripts.sh
+        sed -i '/^$/d' ./jdScripts.sh
+    - name: 'Commit Files'
+      id: commit
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git diff --quiet && git diff --staged --quiet || git commit -am "Automatic update via GitHub：$(date +"%Y-%m-%d %H:%M:%S")"
+    - name: Push Dust
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.PAT }}
+        branch: master
