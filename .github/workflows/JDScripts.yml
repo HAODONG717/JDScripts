@@ -152,11 +152,11 @@ jobs:
         git config --local user.name "GitHub Action"
         git add .
         git diff --quiet && git diff --staged --quiet || git commit -am "Automatic update via GitHub：$(date +"%Y-%m-%d %H:%M:%S")"
-    - name: Push Dust
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.PAT }}
-        branch: master
+#     - name: Push Dust
+#       uses: ad-m/github-push-action@master
+#       with:
+#         github_token: ${{ secrets.PAT }}
+#         branch: master
     - name: Run JDScripts
       run: |
         echo "========= 开始执行脚本 ========="
